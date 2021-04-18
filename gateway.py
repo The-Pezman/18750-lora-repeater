@@ -3,6 +3,9 @@
 import time
 import rak811v2
 import messages
+import itertools
+import csv
+from datetime import datetime, timedelta
 
 Rak811v2 = rak811v2.Rak811v2
 
@@ -78,6 +81,12 @@ while True:
                 if message.get_addr() == dev_addr:
                     decoded_data = message.get_payload()
                     print('Received: %s' % decoded_data)
+                    
+                    timediff = decoded_data[2] - datetime.now()
+                    row = [rssi, snr, decoded_data.pop(2), timediff.seconds, datetime.now().strftime("%H:%M:%S")]
+                    with open('results.csv','a') as f:
+                        writer = csv.writer(f)
+                        writer.writerow(list(itertools.chain(*row)))
 
 
     except rak811v2.serial.Rak811v2TimeoutError as e:
