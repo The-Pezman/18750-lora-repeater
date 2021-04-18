@@ -3,8 +3,9 @@
 import messages
 import time
 import rak811v2
+from datetime import datetime
+import Adafruit_DHT
 Rak811v2 = rak811v2.Rak811v2
-
 
 ## Device address
 dev_addr = 0x02 ## Client
@@ -47,7 +48,8 @@ resp = lora.get_info()
 for x in resp:
     print('\t',x)
 
-
+DHT_SENSOR = Adafruit_DHT.DHT22
+DHT_PIN = 4
 #### End of configs
 
 ### Messages to transmit
@@ -58,10 +60,12 @@ while True:
     print('loop iter %d' % i)
     print()
     
-    str_to_send = "Hello World! msg cnt: %d\r\n" % i
-    print('Sending "%s"' % str_to_send)
+    humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)
+    
+    data_to_send = [round(humidity, 2), round(temperature, 2), datetime.now()]
+    print('Sending "%s"' % data_to_send)
 
-    message = messages.TXMessage(i, dest_addr, str_to_send)
+    message = messages.TXMessage(i, dest_addr, data_to_send)
     tx_bytes = message.get_bytes()
 
     # lora.send_lorap2p(str_to_send)
